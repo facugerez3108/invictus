@@ -23,6 +23,9 @@ export function LoginForm() {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ username, password }),
       });
 
@@ -70,7 +73,7 @@ export function LoginForm() {
         <p className="text-sm text-red-500">{error}</p>
       )}
 
-      <Button className="w-full" disabled={loading}>
+      <Button className="w-full" disabled={loading} type="submit">
         {loading ? "Ingresando..." : "Ingresar"}
       </Button>
     </form>

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/permissions";
 import { createUserSchema } from "@/schemas/user.schema";
-import { create } from "domain";
 
 export async function GET() {
   try {
@@ -23,23 +23,20 @@ export async function GET() {
     return NextResponse.json(users);
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === "Unauthorized") {
-        return NextResponse.json(
-          { message: "Not authenticated" },
-          { status: 401 },
-        );
+      if (error.message === "UNAUTHORIZED") {
+        return NextResponse.json({ message: "No autenticado" }, { status: 401 });
       }
 
-      if (error.message === "Forbidden") {
-        return NextResponse.json(
-          { message: "Not authorized" },
-          { status: 403 },
-        );
+      if (error.message === "FORBIDDEN") {
+        return NextResponse.json({ message: "Sin permisos" }, { status: 403 });
       }
     }
+
+    console.error("GET_USERS_ERROR", error);
+
     return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 },
+      { message: "Error interno del servidor" },
+      { status: 500 }
     );
   }
 }
@@ -54,11 +51,11 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         { message: "Datos inválidos", errors: parsed.error.flatten() },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    const { username, password } = parsed.data;
+    const { username, password, role } = parsed.data;
 
     const existingUser = await prisma.user.findUnique({
       where: { username },
@@ -66,8 +63,8 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "User already exists" },
-        { status: 400 },
+        { message: "El username ya está en uso" },
+        { status: 409 }
       );
     }
 
@@ -77,7 +74,7 @@ export async function POST(req: Request) {
       data: {
         username,
         passwordHash,
-        role: "USER",
+        role,
       },
       select: {
         id: true,
@@ -91,22 +88,20 @@ export async function POST(req: Request) {
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
     if (error instanceof Error) {
-      if (error.message === "Unauthorized") {
-        return NextResponse.json(
-          { message: "No autenticado" },
-          { status: 401 },
-        );
+      if (error.message === "UNAUTHORIZED") {
+        return NextResponse.json({ message: "No autenticado" }, { status: 401 });
       }
 
-      if (error.message === "Forbidden") {
-        return NextResponse.json({ message: "No autorizado" }, { status: 403 });
+      if (error.message === "FORBIDDEN") {
+        return NextResponse.json({ message: "Sin permisos" }, { status: 403 });
       }
     }
 
-    console.error("Error creating user:", error);
+    console.error("CREATE_USER_ERROR", error);
+
     return NextResponse.json(
       { message: "Error interno del servidor" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

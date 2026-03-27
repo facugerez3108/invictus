@@ -10,7 +10,7 @@ if(!JWT_SECRET){
 const secret = new TextEncoder().encode(JWT_SECRET);
 
 export type SessionPayload = {
-    userId: number;
+    userId: string;
     username: string;
     role: "ADMIN" | "USER";
 }
