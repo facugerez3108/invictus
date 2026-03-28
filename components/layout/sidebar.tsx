@@ -15,7 +15,7 @@ export function AppSidebar({ role, isAuthenticated }: Props) {
   const navigation = getNavigation(role, isAuthenticated);
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 border-r bg-background md:block">
+    <aside className="hidden min-h-screen w-64 shrink-0 border-r bg-background md:block">
       <div className="flex h-16 items-center border-b px-5">
         <div>
           <p className="text-lg font-bold tracking-tight">Invictus League</p>

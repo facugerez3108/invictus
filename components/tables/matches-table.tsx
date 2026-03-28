@@ -6,7 +6,12 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 
 type MatchRow = {
@@ -38,7 +43,9 @@ export function MatchesTable({ matches }: Props) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
-    const confirmed = window.confirm("¿Seguro que querés eliminar este partido?");
+    const confirmed = window.confirm(
+      "¿Seguro que querés eliminar este partido?",
+    );
     if (!confirmed) return;
 
     try {
@@ -91,8 +98,16 @@ export function MatchesTable({ matches }: Props) {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
+                  <Link href={`/admin/matches/${match.id}/events`}>
+                    <Button variant="secondary" size="sm">
+                      Eventos
+                    </Button>
+                  </Link>
+
                   <Link href={`/admin/matches/${match.id}/edit`}>
-                    <Button variant="outline" size="sm">Editar</Button>
+                    <Button variant="outline" size="sm">
+                      Editar
+                    </Button>
                   </Link>
 
                   <Button
@@ -110,7 +125,10 @@ export function MatchesTable({ matches }: Props) {
 
           {!matches.length && (
             <TableRow>
-              <TableCell colSpan={6} className="py-6 text-center text-muted-foreground">
+              <TableCell
+                colSpan={6}
+                className="py-6 text-center text-muted-foreground"
+              >
                 No hay partidos cargados.
               </TableCell>
             </TableRow>

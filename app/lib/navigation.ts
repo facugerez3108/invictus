@@ -7,6 +7,7 @@ import {
   Building2,
   Swords,
   LayoutDashboard,
+  PersonStanding
 } from "lucide-react";
 
 export type SessionRole = "ADMIN" | "USER" | null;
@@ -65,6 +66,11 @@ export function getNavigation(role: SessionRole, isAuthenticated: boolean) {
             href: "/admin/matches",
             icon: Swords,
           },
+          {
+            label: "Jugadores",
+            href: "/admin/players",
+            icon: PersonStanding,
+          }
         ]
       : [];
 
