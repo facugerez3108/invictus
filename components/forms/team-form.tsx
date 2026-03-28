@@ -32,6 +32,7 @@ type Props = {
   team?: {
     id: string;
     name: string;
+    avatarUrl: string | null;
     slug: string;
     budget: number;
     isAvailable: boolean;
@@ -45,6 +46,7 @@ export function TeamForm({ mode, leagues, users, team }: Props) {
 
   const [name, setName] = useState(team?.name ?? "");
   const [slug, setSlug] = useState(team?.slug ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(team?.avatarUrl ?? "");
   const [budget, setBudget] = useState(team?.budget?.toString() ?? "0");
   const [isAvailable, setIsAvailable] = useState(team?.isAvailable ?? true);
   const [leagueId, setLeagueId] = useState(team?.leagueId ?? "");
@@ -65,6 +67,7 @@ export function TeamForm({ mode, leagues, users, team }: Props) {
       const payload = {
         name: name.trim(),
         slug: slug.trim() ? slug.trim() : undefined,
+        avatarUrl: avatarUrl.trim() ? avatarUrl.trim() : null,
         budget: Number(budget),
         isAvailable,
         leagueId,
@@ -118,6 +121,16 @@ export function TeamForm({ mode, leagues, users, team }: Props) {
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           placeholder="Ej: arsenal"
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="avatarUrl">Escudo (URL)</Label>
+        <Input
+          id="avatarUrl"
+          value={avatarUrl}
+          onChange={(e) => setAvatarUrl(e.target.value)}
+          placeholder="https://..."
         />
       </div>
 

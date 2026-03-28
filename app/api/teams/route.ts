@@ -70,6 +70,7 @@ export async function POST(req: Request) {
     const {
       name,
       slug,
+      avatarUrl,
       budget,
       isAvailable,
       leagueId,
@@ -138,6 +139,7 @@ export async function POST(req: Request) {
       data: {
         name,
         slug: finalSlug,
+        avatarUrl: avatarUrl?.trim() ? avatarUrl.trim() : null,
         budget,
         isAvailable: isAvailable ?? true,
         leagueId,
@@ -152,6 +154,7 @@ export async function POST(req: Request) {
         id: true,
         name: true,
         slug: true,
+        avatarUrl: true,
         budget: true,
         isAvailable: true,
         createdAt: true,

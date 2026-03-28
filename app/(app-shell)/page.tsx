@@ -90,6 +90,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           team: {
             select: {
               name: true,
+              avatarUrl: true,
             },
           },
         },
@@ -182,6 +183,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     return {
       teamId: row.teamId,
       teamName: row.team.name,
+      avatarUrl: row.team.avatarUrl,
       played: row.played,
       won: row.won,
       drawn: row.drawn,

@@ -1,6 +1,9 @@
+import Image from "next/image";
+
 type StandingRow = {
   teamId: string;
   teamName: string;
+  avatarUrl: string | null;
   played: number;
   won: number;
   drawn: number;
@@ -43,7 +46,22 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
             {rows.map((row, index) => (
               <tr key={row.teamId} className="border-t">
                 <td className="px-4 py-3 font-bold">{index + 1}</td>
-                <td className="px-4 py-3 font-medium">{row.teamName}</td>
+                <td className="px-4 py-3 font-medium">
+                  <div className="flex items-center gap-2">
+                    {row.avatarUrl ? (
+                      <img
+                        src={row.avatarUrl}
+                        alt={row.teamName}
+                        className="h-4 w-4 shrink-0 object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-muted text-[8px] font-bold">
+                        {row.teamName.slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <span>{row.teamName}</span>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-center">{row.played}</td>
                 <td className="px-4 py-3 text-center">{row.won}</td>
                 <td className="px-4 py-3 text-center">{row.drawn}</td>
@@ -51,9 +69,13 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
                 <td className="px-4 py-3 text-center">{row.goalsFor}</td>
                 <td className="px-4 py-3 text-center">{row.goalsAgainst}</td>
                 <td className="px-4 py-3 text-center">
-                  {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
+                  {row.goalDifference > 0
+                    ? `+${row.goalDifference}`
+                    : row.goalDifference}
                 </td>
-                <td className="px-4 py-3 text-center font-bold">{row.points}</td>
+                <td className="px-4 py-3 text-center font-bold">
+                  {row.points}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-center gap-1">
                     {row.form.map((item, i) => (
@@ -71,7 +93,10 @@ export function StandingsTable({ rows }: { rows: StandingRow[] }) {
 
             {!rows.length && (
               <tr>
-                <td colSpan={11} className="px-4 py-6 text-center text-muted-foreground">
+                <td
+                  colSpan={11}
+                  className="px-4 py-6 text-center text-muted-foreground"
+                >
                   No hay datos en la tabla.
                 </td>
               </tr>

@@ -42,7 +42,7 @@ export async function GET(_: Request, { params }: RouteContext) {
     if (!team) {
       return NextResponse.json(
         { message: "Equipo no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -50,7 +50,10 @@ export async function GET(_: Request, { params }: RouteContext) {
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "UNAUTHORIZED") {
-        return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+        return NextResponse.json(
+          { message: "No autenticado" },
+          { status: 401 },
+        );
       }
       if (error.message === "FORBIDDEN") {
         return NextResponse.json({ message: "Sin permisos" }, { status: 403 });
@@ -60,7 +63,7 @@ export async function GET(_: Request, { params }: RouteContext) {
     console.error("GET_TEAM_ERROR", error);
     return NextResponse.json(
       { message: "Error interno del servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -76,7 +79,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     if (!parsed.success) {
       return NextResponse.json(
         { message: "Datos inválidos", errors: parsed.error.flatten() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -93,13 +96,15 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     if (!existingTeam) {
       return NextResponse.json(
         { message: "Equipo no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const nextLeagueId = parsed.data.leagueId ?? existingTeam.leagueId;
     const nextName = parsed.data.name ?? existingTeam.name;
-    const nextSlug = slugify(parsed.data.slug?.trim() || parsed.data.name || existingTeam.slug);
+    const nextSlug = slugify(
+      parsed.data.slug?.trim() || parsed.data.name || existingTeam.slug,
+    );
 
     const league = await prisma.league.findUnique({
       where: { id: nextLeagueId },
@@ -109,7 +114,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     if (!league) {
       return NextResponse.json(
         { message: "La liga seleccionada no existe" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -122,7 +127,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
       if (!owner) {
         return NextResponse.json(
           { message: "El owner seleccionado no existe" },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
@@ -139,7 +144,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     if (nameTaken) {
       return NextResponse.json(
         { message: "Ya existe un equipo con ese nombre en la liga" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -155,7 +160,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     if (slugTaken) {
       return NextResponse.json(
         { message: "Ya existe un equipo con ese slug en la liga" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -165,6 +170,13 @@ export async function PATCH(req: Request, { params }: RouteContext) {
         ...(parsed.data.name !== undefined ? { name: nextName } : {}),
         ...(parsed.data.slug !== undefined || parsed.data.name !== undefined
           ? { slug: nextSlug }
+          : {}),
+        ...(parsed.data.avatarUrl !== undefined
+          ? {
+              avatarUrl: parsed.data.avatarUrl?.trim()
+                ? parsed.data.avatarUrl.trim()
+                : null,
+            }
           : {}),
         ...(parsed.data.budget !== undefined
           ? { budget: parsed.data.budget }
@@ -182,6 +194,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
       select: {
         id: true,
         name: true,
+        avatarUrl: true,
         slug: true,
         budget: true,
         isAvailable: true,
@@ -203,7 +216,10 @@ export async function PATCH(req: Request, { params }: RouteContext) {
       },
     });
 
-    if (parsed.data.leagueId && parsed.data.leagueId !== existingTeam.leagueId) {
+    if (
+      parsed.data.leagueId &&
+      parsed.data.leagueId !== existingTeam.leagueId
+    ) {
       await prisma.teamStanding.update({
         where: { teamId: id },
         data: {
@@ -216,7 +232,10 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "UNAUTHORIZED") {
-        return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+        return NextResponse.json(
+          { message: "No autenticado" },
+          { status: 401 },
+        );
       }
       if (error.message === "FORBIDDEN") {
         return NextResponse.json({ message: "Sin permisos" }, { status: 403 });
@@ -226,7 +245,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     console.error("UPDATE_TEAM_ERROR", error);
     return NextResponse.json(
       { message: "Error interno del servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -244,7 +263,7 @@ export async function DELETE(_: Request, { params }: RouteContext) {
     if (!existingTeam) {
       return NextResponse.json(
         { message: "Equipo no encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -257,8 +276,11 @@ export async function DELETE(_: Request, { params }: RouteContext) {
 
     if (hasMatches) {
       return NextResponse.json(
-        { message: "No se puede eliminar un equipo que ya tiene partidos asociados" },
-        { status: 400 }
+        {
+          message:
+            "No se puede eliminar un equipo que ya tiene partidos asociados",
+        },
+        { status: 400 },
       );
     }
 
@@ -272,7 +294,10 @@ export async function DELETE(_: Request, { params }: RouteContext) {
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "UNAUTHORIZED") {
-        return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+        return NextResponse.json(
+          { message: "No autenticado" },
+          { status: 401 },
+        );
       }
       if (error.message === "FORBIDDEN") {
         return NextResponse.json({ message: "Sin permisos" }, { status: 403 });
@@ -282,7 +307,7 @@ export async function DELETE(_: Request, { params }: RouteContext) {
     console.error("DELETE_TEAM_ERROR", error);
     return NextResponse.json(
       { message: "Error interno del servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

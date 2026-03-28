@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import {
 type TeamRow = {
   id: string;
   name: string;
+  avatarUrl: string | null;
   slug: string;
   budget: number;
   isAvailable: boolean;
@@ -86,7 +88,18 @@ export function TeamsTable({ teams }: Props) {
         <TableBody>
           {teams.map((team) => (
             <TableRow key={team.id}>
-              <TableCell className="font-medium">{team.name}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  {team.avatarUrl && (
+                    <img
+                      src={team.avatarUrl}
+                      alt={team.name}
+                      className="h-5 w-5 rounded-sm object-contain"
+                    />
+                  )}
+                  <span>{team.name}</span>
+                </div>
+              </TableCell>
               <TableCell>{team.league.name}</TableCell>
               <TableCell>{team.owner?.username ?? "Sin owner"}</TableCell>
               <TableCell>

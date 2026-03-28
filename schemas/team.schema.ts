@@ -5,13 +5,9 @@ export const createTeamSchema = z.object({
     .string()
     .min(2, "El nombre debe tener al menos 2 caracteres")
     .max(80, "El nombre no puede superar los 80 caracteres"),
-  slug: z
-    .string()
-    .trim()
-    .optional(),
-  budget: z.coerce
-    .number()
-    .min(0, "El presupuesto no puede ser negativo"),
+  slug: z.string().trim().optional(),
+  budget: z.coerce.number().min(0, "El presupuesto no puede ser negativo"),
+  avatarUrl: z.string().url("Debe ser una URL válida").optional().nullable(),
   isAvailable: z.boolean().optional(),
   leagueId: z.string().uuid("Liga inválida"),
   ownerId: z.string().uuid("Owner inválido").nullable().optional(),
@@ -23,14 +19,12 @@ export const updateTeamSchema = z.object({
     .min(2, "El nombre debe tener al menos 2 caracteres")
     .max(80, "El nombre no puede superar los 80 caracteres")
     .optional(),
-  slug: z
-    .string()
-    .trim()
-    .optional(),
+  slug: z.string().trim().optional(),
   budget: z.coerce
     .number()
     .min(0, "El presupuesto no puede ser negativo")
     .optional(),
+  avatarUrl: z.string().url("Debe ser una URL válida").optional().nullable(),
   isAvailable: z.boolean().optional(),
   leagueId: z.string().uuid("Liga inválida").optional(),
   ownerId: z.string().uuid("Owner inválido").nullable().optional(),

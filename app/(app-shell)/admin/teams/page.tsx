@@ -15,6 +15,7 @@ export default async function AdminTeamsPage() {
       id: true,
       name: true,
       slug: true,
+      avatarUrl: true,
       budget: true,
       isAvailable: true,
       createdAt: true,
@@ -38,6 +39,7 @@ export default async function AdminTeamsPage() {
   const serializedTeams = teams.map((team) => ({
     id: team.id,
     name: team.name,
+    avatarUrl: team.avatarUrl,
     slug: team.slug,
     budget: Number(team.budget),
     isAvailable: team.isAvailable,

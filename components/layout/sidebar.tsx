@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getNavigation, SessionRole } from "@/app/lib/navigation";
-
+import invictusLogo from "@/public/invictusleaguelogo.png";
 type Props = {
   role: SessionRole;
   isAuthenticated: boolean;
