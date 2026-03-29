@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EyeOff, Eye } from "lucide-react";
+
 
 export function LoginForm() {
   const router = useRouter();
@@ -14,6 +16,9 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -65,10 +70,17 @@ export function LoginForm() {
         <Label>Contraseña</Label>
         <Input
           className="mt-2"
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <button
+          type="button"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          onClick={() => setShowPassword(!showPassword)}
+        >
+          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
       </div>
 
       {error && (
