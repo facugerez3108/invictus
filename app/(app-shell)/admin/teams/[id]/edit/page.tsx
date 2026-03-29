@@ -21,6 +21,7 @@ export default async function EditTeamPage({ params }: PageProps) {
         id: true,
         name: true,
         slug: true,
+        avatarUrl: true,
         budget: true,
         isAvailable: true,
         leagueId: true,
@@ -64,6 +65,7 @@ export default async function EditTeamPage({ params }: PageProps) {
             team={{
               id: team.id,
               name: team.name,
+              avatarUrl: team.avatarUrl,
               slug: team.slug,
               budget: Number(team.budget),
               isAvailable: team.isAvailable,
