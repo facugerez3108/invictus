@@ -55,6 +55,7 @@ export function LoginForm() {
       <div>
         <Label>Username</Label>
         <Input
+          className="mt-2"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
@@ -63,6 +64,7 @@ export function LoginForm() {
       <div>
         <Label>Contraseña</Label>
         <Input
+          className="mt-2"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
