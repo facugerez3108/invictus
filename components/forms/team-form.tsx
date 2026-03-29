@@ -139,7 +139,6 @@ export function TeamForm({ mode, leagues, users, team }: Props) {
         <Input
           id="budget"
           type="number"
-          min="0"
           step="0.01"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
