@@ -11,7 +11,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 
 type LeagueOption = {
@@ -138,7 +137,8 @@ export function TeamForm({ mode, leagues, users, team }: Props) {
         <Label htmlFor="budget">Presupuesto</Label>
         <Input
           id="budget"
-          type="number"
+          type="text"
+          inputMode="decimal"
           step="0.01"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
