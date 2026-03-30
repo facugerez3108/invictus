@@ -48,34 +48,115 @@ export async function POST(req: Request) {
       );
     }
 
-    const player = await prisma.player.findUnique({
-      where: { id: data.playerId },
-      select: {
-        id: true,
-        name: true,
-        teamId: true,
-        isActive: true,
-      },
-    });
+    let resolvedPlayerId = "";
+    let resolvedPlayer: {
+      id: string;
+      name: string;
+      teamId: string | null;
+      isActive: boolean;
+    } | null = null;
 
-    if (!player) {
-      return NextResponse.json(
-        { message: "Jugador no encontrado" },
-        { status: 404 },
-      );
+    if (data.playerMode === "REGISTERED") {
+      const player = await prisma.player.findUnique({
+        where: { id: data.playerId },
+        select: {
+          id: true,
+          name: true,
+          teamId: true,
+          isActive: true,
+        },
+      });
+
+      if (!player) {
+        return NextResponse.json(
+          { message: "Jugador no encontrado" },
+          { status: 404 },
+        );
+      }
+
+      if (!player.isActive) {
+        return NextResponse.json(
+          { message: "El jugador no está activo" },
+          { status: 400 },
+        );
+      }
+
+      resolvedPlayerId = player.id;
+      resolvedPlayer = player;
+    } else {
+      const normalizedPlayerName = data.playerName.trim();
+
+      const existingPlayer = await prisma.player.findFirst({
+        where: {
+          name: {
+            equals: normalizedPlayerName,
+            mode: "insensitive",
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          teamId: true,
+          isActive: true,
+        },
+      });
+
+      if (existingPlayer) {
+        if (!existingPlayer.isActive) {
+          return NextResponse.json(
+            {
+              message:
+                "Ya existe un jugador con ese nombre, pero está inactivo. Reactivalo o usá otro nombre.",
+            },
+            { status: 409 },
+          );
+        }
+
+        resolvedPlayerId = existingPlayer.id;
+        resolvedPlayer = existingPlayer;
+      } else {
+        const createdPlayer = await prisma.player.create({
+          data: {
+            name: normalizedPlayerName,
+            position: data.position?.trim() || null,
+            isActive: true,
+            teamId: null,
+            currentClubName:
+              data.originType === "EXTERNAL"
+                ? data.fromExternalName.trim()
+                : null,
+            currentLeagueName:
+              data.originType === "EXTERNAL"
+                ? data.fromExternalLeague?.trim() || null
+                : null,
+          },
+          select: {
+            id: true,
+            name: true,
+            teamId: true,
+            isActive: true,
+          },
+        });
+
+        resolvedPlayerId = createdPlayer.id;
+        resolvedPlayer = createdPlayer;
+      }
     }
 
-    if (!player.isActive) {
+    if (!resolvedPlayer) {
       return NextResponse.json(
-        { message: "El jugador no está activo" },
-        { status: 400 },
+        { message: "No se pudo resolver el jugador del fichaje" },
+        { status: 500 },
       );
     }
 
     if (data.originType === "INTERNAL") {
       if (data.fromTeamId === data.toTeamId) {
         return NextResponse.json(
-          { message: "El equipo origen no puede ser el mismo que el equipo destino" },
+          {
+            message:
+              "El equipo origen no puede ser el mismo que el equipo destino",
+          },
           { status: 400 },
         );
       }
@@ -92,9 +173,12 @@ export async function POST(req: Request) {
         );
       }
 
-      if (player.teamId !== data.fromTeamId) {
+      if (resolvedPlayer.teamId !== data.fromTeamId) {
         return NextResponse.json(
-          { message: "El jugador no pertenece al equipo origen seleccionado" },
+          {
+            message:
+              "El jugador no pertenece al equipo origen seleccionado",
+          },
           { status: 400 },
         );
       }
@@ -115,7 +199,7 @@ export async function POST(req: Request) {
 
     const existingPending = await prisma.transfer.findFirst({
       where: {
-        playerId: data.playerId,
+        playerId: resolvedPlayerId,
         status: "PENDING",
       },
       select: { id: true },
@@ -130,7 +214,7 @@ export async function POST(req: Request) {
 
     const transfer = await prisma.transfer.create({
       data: {
-        playerId: data.playerId,
+        playerId: resolvedPlayerId,
         fromTeamId: data.originType === "INTERNAL" ? data.fromTeamId : null,
         fromExternalName:
           data.originType === "EXTERNAL" ? data.fromExternalName.trim() : null,
@@ -142,7 +226,20 @@ export async function POST(req: Request) {
         requestedById: session.userId,
         amount: data.amount,
         status: "PENDING",
-        type: data.originType === "EXTERNAL" ? "PURCHASE" : "PURCHASE",
+        type: "PURCHASE",
+      },
+      select: {
+        id: true,
+        status: true,
+        type: true,
+        amount: true,
+        createdAt: true,
+        player: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -150,6 +247,10 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") {
       return NextResponse.json({ message: "No autenticado" }, { status: 401 });
+    }
+
+    if (error instanceof Error && error.message === "FORBIDDEN") {
+      return NextResponse.json({ message: "Sin permisos" }, { status: 403 });
     }
 
     console.error("CREATE_TRANSFER_ERROR", error);

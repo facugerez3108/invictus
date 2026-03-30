@@ -37,6 +37,7 @@ type Props = {
 };
 
 type OriginType = "INTERNAL" | "EXTERNAL";
+type PlayerMode = "REGISTERED" | "MANUAL";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("es-AR", {
@@ -49,11 +50,16 @@ function formatCurrency(value: number) {
 export function TransferForm({ players, teams, destinationTeam }: Props) {
   const router = useRouter();
 
+  const [playerMode, setPlayerMode] = useState<PlayerMode>("REGISTERED");
   const [playerId, setPlayerId] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [playerPosition, setPlayerPosition] = useState("");
+
   const [originType, setOriginType] = useState<OriginType>("INTERNAL");
   const [fromTeamId, setFromTeamId] = useState("");
   const [fromExternalName, setFromExternalName] = useState("");
   const [fromExternalLeague, setFromExternalLeague] = useState("");
+
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -71,29 +77,77 @@ export function TransferForm({ players, teams, destinationTeam }: Props) {
     return teams.filter((team) => team.id !== destinationTeam.id);
   }, [teams, destinationTeam.id]);
 
+  function resetRegisteredPlayerState() {
+    setPlayerId("");
+  }
+
+  function resetManualPlayerState() {
+    setPlayerName("");
+    setPlayerPosition("");
+  }
+
+  function handlePlayerModeChange(mode: PlayerMode) {
+    setPlayerMode(mode);
+    setError("");
+
+    if (mode === "REGISTERED") {
+      resetManualPlayerState();
+    } else {
+      resetRegisteredPlayerState();
+    }
+  }
+
+  function handleOriginTypeChange(type: OriginType) {
+    setOriginType(type);
+    setError("");
+
+    if (type === "INTERNAL") {
+      setFromExternalName("");
+      setFromExternalLeague("");
+    } else {
+      setFromTeamId("");
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const payload =
-        originType === "INTERNAL"
+      const basePayload = {
+        toTeamId: destinationTeam.id,
+        amount: numericAmount,
+        originType,
+      };
+
+      const playerPayload =
+        playerMode === "REGISTERED"
           ? {
-              originType: "INTERNAL",
+              playerMode: "REGISTERED" as const,
               playerId,
-              toTeamId: destinationTeam.id,
-              fromTeamId,
-              amount: numericAmount,
             }
           : {
-              originType: "EXTERNAL",
-              playerId,
-              toTeamId: destinationTeam.id,
+              playerMode: "MANUAL" as const,
+              playerName: playerName.trim(),
+              position: playerPosition.trim(),
+            };
+
+      const originPayload =
+        originType === "INTERNAL"
+          ? {
+              fromTeamId,
+            }
+          : {
               fromExternalName: fromExternalName.trim(),
               fromExternalLeague: fromExternalLeague.trim(),
-              amount: numericAmount,
             };
+
+      const payload = {
+        ...basePayload,
+        ...playerPayload,
+        ...originPayload,
+      };
 
       const res = await fetch("/api/transfers", {
         method: "POST",
@@ -120,54 +174,107 @@ export function TransferForm({ players, teams, destinationTeam }: Props) {
     }
   }
 
-  const isInternalInvalid =
-    originType === "INTERNAL" &&
-    (!playerId || !fromTeamId || numericAmount <= 0);
+  const isRegisteredPlayerInvalid = playerMode === "REGISTERED" && !playerId;
+  const isManualPlayerInvalid =
+    playerMode === "MANUAL" && !playerName.trim();
 
-  const isExternalInvalid =
+  const isInternalOriginInvalid =
+    originType === "INTERNAL" && (!fromTeamId || numericAmount <= 0);
+
+  const isExternalOriginInvalid =
     originType === "EXTERNAL" &&
-    (!playerId || !fromExternalName.trim() || numericAmount <= 0);
+    (!fromExternalName.trim() || numericAmount <= 0);
+
+  const isAmountInvalid = numericAmount <= 0;
 
   const isSubmitDisabled =
     loading ||
     exceedsDebt ||
-    (originType === "INTERNAL" ? isInternalInvalid : isExternalInvalid);
+    isAmountInvalid ||
+    isRegisteredPlayerInvalid ||
+    isManualPlayerInvalid ||
+    isInternalOriginInvalid ||
+    isExternalOriginInvalid;
+
   return (
     <form onSubmit={onSubmit} className="space-y-8">
       <section className="space-y-4 rounded-2xl border p-5">
         <div>
           <h2 className="text-lg font-semibold">Jugador</h2>
           <p className="text-sm text-muted-foreground">
-            Seleccioná el jugador que querés incorporar.
+            Elegí un jugador ya cargado o escribilo manualmente.
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label>Jugador</Label>
-          <Select
-            value={playerId || null}
-            onValueChange={(value) => setPlayerId(value ?? "")}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant={playerMode === "REGISTERED" ? "default" : "outline"}
+            onClick={() => handlePlayerModeChange("REGISTERED")}
           >
-            <SelectTrigger>
-              {selectedPlayer
-                ? `${selectedPlayer.name}${selectedPlayer.position ? ` - ${selectedPlayer.position}` : ""}`
-                : "Seleccionar jugador"}
-            </SelectTrigger>
-            <SelectContent>
-              {players.map((player) => (
-                <SelectItem key={player.id} value={player.id}>
-                  {player.name}
-                  {player.position ? ` - ${player.position}` : ""}
-                  {player.teamName
-                    ? ` (${player.teamName})`
-                    : player.currentClubName
-                      ? ` (${player.currentClubName})`
-                      : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            Jugador registrado
+          </Button>
+
+          <Button
+            type="button"
+            variant={playerMode === "MANUAL" ? "default" : "outline"}
+            onClick={() => handlePlayerModeChange("MANUAL")}
+          >
+            Jugador manual
+          </Button>
         </div>
+
+        {playerMode === "REGISTERED" ? (
+          <div className="space-y-2">
+            <Label>Jugador</Label>
+            <Select
+              value={playerId || null}
+              onValueChange={(value) => setPlayerId(value ?? "")}
+            >
+              <SelectTrigger>
+                {selectedPlayer
+                  ? `${selectedPlayer.name}${selectedPlayer.position ? ` - ${selectedPlayer.position}` : ""}`
+                  : "Seleccionar jugador"}
+              </SelectTrigger>
+
+              <SelectContent>
+                {players.map((player) => (
+                  <SelectItem key={player.id} value={player.id}>
+                    {player.name}
+                    {player.position ? ` - ${player.position}` : ""}
+                    {player.teamName
+                      ? ` (${player.teamName})`
+                      : player.currentClubName
+                        ? ` (${player.currentClubName})`
+                        : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="playerName">Nombre del jugador</Label>
+              <Input
+                id="playerName"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                placeholder="Ej: Lautaro Martínez"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="playerPosition">Posición</Label>
+              <Input
+                id="playerPosition"
+                value={playerPosition}
+                onChange={(e) => setPlayerPosition(e.target.value)}
+                placeholder="Ej: ST"
+              />
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="space-y-4 rounded-2xl border p-5">
@@ -199,7 +306,7 @@ export function TransferForm({ players, teams, destinationTeam }: Props) {
           <Button
             type="button"
             variant={originType === "INTERNAL" ? "default" : "outline"}
-            onClick={() => setOriginType("INTERNAL")}
+            onClick={() => handleOriginTypeChange("INTERNAL")}
           >
             Equipo registrado
           </Button>
@@ -207,7 +314,7 @@ export function TransferForm({ players, teams, destinationTeam }: Props) {
           <Button
             type="button"
             variant={originType === "EXTERNAL" ? "default" : "outline"}
-            onClick={() => setOriginType("EXTERNAL")}
+            onClick={() => handleOriginTypeChange("EXTERNAL")}
           >
             Club externo
           </Button>
@@ -225,6 +332,7 @@ export function TransferForm({ players, teams, destinationTeam }: Props) {
                   ? selectedFromTeam.name
                   : "Seleccionar equipo origen"}
               </SelectTrigger>
+
               <SelectContent>
                 {availableInternalTeams.map((team) => (
                   <SelectItem key={team.id} value={team.id}>
@@ -242,7 +350,7 @@ export function TransferForm({ players, teams, destinationTeam }: Props) {
                 id="fromExternalName"
                 value={fromExternalName}
                 onChange={(e) => setFromExternalName(e.target.value)}
-                placeholder="Ej: Al-Nassr"
+                placeholder="Ej: Inter"
               />
             </div>
 
@@ -252,7 +360,7 @@ export function TransferForm({ players, teams, destinationTeam }: Props) {
                 id="fromExternalLeague"
                 value={fromExternalLeague}
                 onChange={(e) => setFromExternalLeague(e.target.value)}
-                placeholder="Ej: Saudi Pro League"
+                placeholder="Ej: Serie A"
               />
             </div>
           </div>
