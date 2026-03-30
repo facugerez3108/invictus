@@ -163,6 +163,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           player: {
             select: {
               name: true,
+              currentClubName: true,
               team: {
                 select: {
                   name: true,
@@ -210,7 +211,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       scorerMap.set(event.playerId, {
         playerId: event.playerId,
         playerName: event.player.name,
-        teamName: event.player.team.name,
+        teamName:
+          event.player.team?.name ??
+          event.player.currentClubName ??
+          "Sin equipo",
         goals: 1,
       });
     }
