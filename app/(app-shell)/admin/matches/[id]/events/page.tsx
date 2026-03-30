@@ -81,7 +81,18 @@ export default async function MatchEventsPage({ params }: PageProps) {
     { id: match.awayTeam.id, name: match.awayTeam.name },
   ];
 
-  const players = [...match.homeTeam.players, ...match.awayTeam.players];
+  const players = [
+  ...match.homeTeam.players.map((player) => ({
+    id: player.id,
+    name: player.name,
+    teamId: match.homeTeam.id,
+  })),
+  ...match.awayTeam.players.map((player) => ({
+    id: player.id,
+    name: player.name,
+    teamId: match.awayTeam.id,
+  })),
+];
 
   const serializedEvents = match.events.map((event) => ({
     id: event.id,
