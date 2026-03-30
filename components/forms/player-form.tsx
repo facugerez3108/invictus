@@ -29,6 +29,8 @@ type Props = {
     position: string | null;
     isActive: boolean;
     teamId: string;
+    currentClubName: string | null;
+    currentLeagueName: string | null;
   };
 };
 
@@ -37,11 +39,17 @@ export function PlayerForm({ mode, teams, player }: Props) {
 
   const [name, setName] = useState(player?.name ?? "");
   const [number, setNumber] = useState(
-    player?.number != null ? String(player.number) : ""
+    player?.number != null ? String(player.number) : "",
   );
   const [position, setPosition] = useState(player?.position ?? "");
   const [isActive, setIsActive] = useState(player?.isActive ?? true);
   const [teamId, setTeamId] = useState(player?.teamId ?? "");
+  const [currentClubName, setCurrentClubName] = useState(
+    player?.currentClubName ?? "",
+  );
+  const [currentLeagueName, setCurrentLeagueName] = useState(
+    player?.currentLeagueName ?? "",
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,7 +66,11 @@ export function PlayerForm({ mode, teams, player }: Props) {
         number: number.trim() ? Number(number) : null,
         position: position.trim() ? position.trim() : null,
         isActive,
-        teamId,
+        teamId: teamId || null,
+        currentClubName: currentClubName.trim() ? currentClubName.trim() : null,
+        currentLeagueName: currentLeagueName.trim()
+          ? currentLeagueName.trim()
+          : null,
       };
 
       const res = await fetch(
@@ -69,7 +81,7 @@ export function PlayerForm({ mode, teams, player }: Props) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const contentType = res.headers.get("content-type");
@@ -129,17 +141,20 @@ export function PlayerForm({ mode, teams, player }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>Equipo</Label>
+        <Label>Equipo interno</Label>
         <Select
-          value={teamId || null}
-          onValueChange={(value) => setTeamId(value ?? "")}
+          value={teamId || "none"}
+          onValueChange={(value) =>
+            setTeamId(value === "none" ? "" : (value ?? ""))
+          }
         >
           <SelectTrigger>
             {selectedTeam
               ? `${selectedTeam.name} - ${selectedTeam.leagueName}`
-              : "Seleccionar equipo"}
+              : "Sin equipo interno"}
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="none">Sin equipo interno</SelectItem>
             {teams.map((team) => (
               <SelectItem key={team.id} value={team.id}>
                 {team.name} - {team.leagueName}
@@ -147,6 +162,26 @@ export function PlayerForm({ mode, teams, player }: Props) {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="currentClubName">Equipo externo</Label>
+        <Input
+          id="currentClubName"
+          value={currentClubName}
+          onChange={(e) => setCurrentClubName(e.target.value)}
+          placeholder="Ej: Inter"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="currentLeagueName">Liga externa</Label>
+        <Input
+          id="currentLeagueName"
+          value={currentLeagueName}
+          onChange={(e) => setCurrentLeagueName(e.target.value)}
+          placeholder="Ej: Serie A"
+        />
       </div>
 
       <div className="flex items-center gap-2">

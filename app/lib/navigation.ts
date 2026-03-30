@@ -7,7 +7,8 @@ import {
   Building2,
   Swords,
   LayoutDashboard,
-  PersonStanding
+  PersonStanding,
+  ArrowRightLeft
 } from "lucide-react";
 
 export type SessionRole = "ADMIN" | "USER" | null;
@@ -34,6 +35,11 @@ export function getNavigation(role: SessionRole, isAuthenticated: boolean) {
           href: "/panel",
           icon: LayoutDashboard,
         },
+        {
+          label: "Fichajes",
+          href: "/fichajes",
+          icon: ArrowRightLeft,
+        }
       ]
     : [
         {
@@ -70,6 +76,11 @@ export function getNavigation(role: SessionRole, isAuthenticated: boolean) {
             label: "Jugadores",
             href: "/admin/players",
             icon: PersonStanding,
+          },
+          {
+            label: "Transferencias",
+            href: "/admin/transfers",
+            icon: ArrowRightLeft,
           }
         ]
       : [];

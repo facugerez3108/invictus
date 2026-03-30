@@ -6,7 +6,12 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 
 type PlayerRow = {
@@ -15,6 +20,8 @@ type PlayerRow = {
   number: number | null;
   position: string | null;
   isActive: boolean;
+  currentClubName: string | null;
+  currentLeagueName: string | null;
   createdAt: string;
   updatedAt: string;
   team: {
@@ -24,7 +31,7 @@ type PlayerRow = {
       id: string;
       name: string;
     };
-  };
+  } | null;
 };
 
 type Props = {
@@ -36,7 +43,9 @@ export function PlayersTable({ players }: Props) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   async function handleDelete(id: string) {
-    const confirmed = window.confirm("¿Seguro que querés eliminar este jugador?");
+    const confirmed = window.confirm(
+      "¿Seguro que querés eliminar este jugador?",
+    );
     if (!confirmed) return;
 
     try {
@@ -69,8 +78,10 @@ export function PlayersTable({ players }: Props) {
             <TableHead>Nombre</TableHead>
             <TableHead>Número</TableHead>
             <TableHead>Posición</TableHead>
-            <TableHead>Equipo</TableHead>
-            <TableHead>Liga</TableHead>
+            <TableHead>Equipo interno</TableHead>
+            <TableHead>Liga interna</TableHead>
+            <TableHead>Equipo externo</TableHead>
+            <TableHead>Liga externa</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
@@ -82,8 +93,10 @@ export function PlayersTable({ players }: Props) {
               <TableCell className="font-medium">{player.name}</TableCell>
               <TableCell>{player.number ?? "-"}</TableCell>
               <TableCell>{player.position ?? "-"}</TableCell>
-              <TableCell>{player.team.name}</TableCell>
-              <TableCell>{player.team.league.name}</TableCell>
+              <TableCell>{player.team?.name ?? "-"}</TableCell>
+              <TableCell>{player.team?.league.name ?? "-"}</TableCell>
+              <TableCell>{player.currentClubName ?? "-"}</TableCell>
+              <TableCell>{player.currentLeagueName ?? "-"}</TableCell>
               <TableCell>
                 <span
                   className={
@@ -98,7 +111,9 @@ export function PlayersTable({ players }: Props) {
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Link href={`/admin/players/${player.id}/edit`}>
-                    <Button variant="outline" size="sm">Editar</Button>
+                    <Button variant="outline" size="sm">
+                      Editar
+                    </Button>
                   </Link>
 
                   <Button
@@ -116,7 +131,10 @@ export function PlayersTable({ players }: Props) {
 
           {!players.length && (
             <TableRow>
-              <TableCell colSpan={7} className="py-6 text-center text-muted-foreground">
+              <TableCell
+                colSpan={9}
+                className="py-6 text-center text-muted-foreground"
+              >
                 No hay jugadores cargados.
               </TableCell>
             </TableRow>

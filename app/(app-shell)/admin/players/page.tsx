@@ -10,13 +10,15 @@ export default async function AdminPlayersPage() {
   await requireAdmin();
 
   const players = await prisma.player.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { name: "asc" },
     select: {
       id: true,
       name: true,
       number: true,
       position: true,
       isActive: true,
+      currentClubName: true,
+      currentLeagueName: true,
       createdAt: true,
       updatedAt: true,
       team: {
@@ -40,16 +42,20 @@ export default async function AdminPlayersPage() {
     number: player.number,
     position: player.position,
     isActive: player.isActive,
+    currentClubName: player.currentClubName,
+    currentLeagueName: player.currentLeagueName,
     createdAt: player.createdAt.toISOString(),
     updatedAt: player.updatedAt.toISOString(),
-    team: {
-      id: player.team.id,
-      name: player.team.name,
-      league: {
-        id: player.team.league.id,
-        name: player.team.league.name,
-      },
-    },
+    team: player.team
+      ? {
+          id: player.team.id,
+          name: player.team.name,
+          league: {
+            id: player.team.league.id,
+            name: player.team.league.name,
+          },
+        }
+      : null,
   }));
 
   return (
