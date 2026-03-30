@@ -28,7 +28,7 @@ type Props = {
     number: number | null;
     position: string | null;
     isActive: boolean;
-    teamId: string;
+    teamId: string | null;
     currentClubName: string | null;
     currentLeagueName: string | null;
   };

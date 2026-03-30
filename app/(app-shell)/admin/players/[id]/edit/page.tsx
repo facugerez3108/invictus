@@ -24,6 +24,8 @@ export default async function EditPlayerPage({ params }: PageProps) {
         position: true,
         isActive: true,
         teamId: true,
+        currentClubName: true,
+        currentLeagueName: true,
       },
     }),
     prisma.team.findMany({
@@ -66,6 +68,8 @@ export default async function EditPlayerPage({ params }: PageProps) {
               position: player.position,
               isActive: player.isActive,
               teamId: player.teamId,
+              currentClubName: player.currentClubName,
+              currentLeagueName: player.currentLeagueName,
             }}
           />
         </CardContent>
