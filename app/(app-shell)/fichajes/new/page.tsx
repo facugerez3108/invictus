@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TransferForm } from "@/components/forms/transfer-form";
+import { toast } from 'sonner';
 
 export default async function NewTransferPage() {
   const session = await requireAuth();
@@ -24,7 +25,7 @@ export default async function NewTransferPage() {
   });
 
   if (!ownedTeams.length) {
-    redirect("/panel/fichajes");
+    redirect("/");
   }
 
   // por ahora tomamos el primer equipo del user
